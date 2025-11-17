@@ -1,0 +1,127 @@
+const handleToggle = useCallback(async (field) => {
+    if (!jobData?.job_home?.id) {
+      console.warn("Job data or job home ID not available for toggle.");
+      return;
+    }
+
+    const currentToggleValue = jobData.job_home[field];
+    const newToggleValue = !currentToggleValue;
+
+    // Optimistic update: update UI immediately
+    setJobData(prevJobData => ({
+      ...prevJobData,
+      job_home: {
+        ...prevJobData.job_home,
+        [field]: newToggleValue,
+      },
+    }));
+
+    // Confirmation dialog before API call
+    if (!window.confirm(`Are you sure you want to toggle "${field.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())}"?`)) {
+      // Revert if user cancels
+      setJobData(prevJobData => ({
+        ...prevJobData,
+        job_home: {
+          ...prevJobData.job_home,
+          [field]: currentToggleValue,
+        },
+      }));
+      return;
+    }
+
+    try {
+      const res = await axios.put(
+        `http://localhost:8000/api/job-homes/${jobData.job_home.id}`,
+        {
+          [field]: newToggleValue,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      // If backend returns a full job_home object, update state with it
+      if (res.data && res.data.id && res.data.job_no) {
+        setJobData(prevJobData => ({
+          ...prevJobData,
+          job_home: res.data,
+        }));
+      } else {
+        // If backend response is partial, rely on optimistic update for other fields
+        console.warn("Backend response for job_home update was not a full job_home object. Relying on optimistic update for other fields.");
+      }
+
+    } catch (err) {
+      console.error(`Failed to update ${field}`, err);
+      alert(`Failed to update ${field.replace(/_/g, " ")}. Please try again.`);
+      // Revert if API call fails
+      setJobData(prevJobData => ({
+        ...prevJobData,
+        job_home: {
+          ...prevJobData.job_home,
+          [field]: currentToggleValue,
+        },
+      }));
+    }
+  }, [jobData]); // Re-run if jobData changes
+=======
+  // Modified Callback to handle toggling job home fields (e.g., service_start, customer_ok)
+  const handleToggle = useCallback(async (field) => {
+    if (!jobData?.job_home?.id) {
+      console.warn("Job data or job home ID not available for toggle.");
+      return;
+    }
+
+    const currentToggleValue = jobData.job_home[field];
+    const newToggleValue = !currentToggleValue;
+
+    console.log(`Toggling field: ${field} from ${currentToggleValue} to ${newToggleValue}`);
+
+    // Optimistic update: update UI immediately
+    setJobData(prevJobData => ({
+      ...prevJobData,
+      job_home: {
+        ...prevJobData.job_home,
+        [field]: newToggleValue,
+      },
+    }));
+
+    // Removed confirmation dialog for debugging
+
+    try {
+      const res = await axios.put(
+        `http://localhost:8000/api/job-homes/${jobData.job_home.id}`,
+        {
+          [field]: newToggleValue,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log(`Backend response for toggle ${field}:`, res.data);
+
+      // If backend returns a full job_home object, update state with it
+      if (res.data && res.data.id && res.data.job_no) {
+        setJobData(prevJobData => ({
+          ...prevJobData,
+          job_home: res.data,
+        }));
+      } else {
+        // If backend response is partial, rely on optimistic update for other fields
+        console.warn("Backend response for job_home update was not a full job_home object. Relying on optimistic update for other fields.");
+      }
+
+    } catch (err) {
+      console.error(`Failed to update ${field}`, err);
+      alert(`Failed to update ${field.replace(/_/g, " ")}. Please try again.`);
+      // Revert if API call fails
+      setJobData(prevJobData => ({
+        ...prevJobData,
+        job_home: {
+          ...prevJobData.job_home,
+          [field]: currentToggleValue,
+        },
+      }));
+    }
+  }, [jobData]); // Re-run if jobData changes
