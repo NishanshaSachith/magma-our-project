@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../components/ThemeContext/ThemeContext';
 import { FiUser } from "react-icons/fi";
-import axios from 'axios';
+import api from '../../services/api';
 import { CompanySettingsContext } from '../../context/CompanySettingsContext';
 import Notification from '../../components/Notification/Notification'; 
 import { useAuth } from '../hooks/useAuth';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api'; 
+
 
 const Settings = () => {
     const { isDarkMode } = useContext(ThemeContext);
@@ -32,11 +32,11 @@ const Settings = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/company-settings`);
+                const response = await api.get('/company-settings');
                 const { company_name, logo_url, account_name, account_number, bank_name, bank_branch, head_of_technical_name, head_of_technical_contact } = response.data;
-                setCompanyName(company_name || ''); 
-                setProfileImage(logo_url); 
-                setCompanyLogoUrl(logo_url); 
+                setCompanyName(company_name || '');
+                setProfileImage(logo_url);
+                setCompanyLogoUrl(logo_url);
                 setAccountName(account_name || '');
                 setAccountNumber(account_number || '');
                 setBankName(bank_name || '');
@@ -49,7 +49,7 @@ const Settings = () => {
             }
         };
         fetchSettings();
-    }, [setCompanyLogoUrl]); 
+    }, [setCompanyLogoUrl]);
 
     const handleCompanyNameChange = (event) => { if (isAdmin) setCompanyName(event.target.value); };
     const handleAccountNameChange = (event) => { if (isAdmin) setAccountName(event.target.value); };
@@ -88,7 +88,7 @@ const Settings = () => {
         }
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/company-settings`, formData, {
+            const response = await api.put('/company-settings', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 

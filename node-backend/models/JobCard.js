@@ -1,0 +1,40 @@
+const mongoose = require('mongoose');
+
+const jobCardSchema = new mongoose.Schema({
+  job_home_id: { type: mongoose.Schema.Types.ObjectId, ref: 'JobHome', required: true },
+  selected_date: { type: Date },
+  customer_name: { type: String },
+  fam_no: { type: String },
+  contact_person: { type: String },
+  area: { type: String },
+  contact_number: { type: String },
+  branch_sc: { type: String },
+  generator_make: { type: String },
+  kva: { type: String },
+  engine_make: { type: String },
+  engine_se_no: { type: String },
+  last_service: { type: Date },
+  alternator_make: { type: String },
+  alternator_se_no: { type: String },
+  gen_model: { type: String },
+  controller_module: { type: String },
+  avr: { type: String },
+  ats_info: { type: String },
+  job_description: { type: String },
+  oil_filter_state: { type: String },
+  oil_filter_value: { type: String },
+  air_filter_state: { type: String },
+  air_filter_value: { type: String },
+  oil_state: { type: String },
+  oil_value: { type: String },
+  fuel_filter_state: { type: String },
+  fuel_filter_value: { type: String },
+  battery_charge_state: { type: String },
+  battery_charge_value: { type: String },
+  battery_value: { type: String },
+  other_value: { type: String },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('JobCard', jobCardSchema);

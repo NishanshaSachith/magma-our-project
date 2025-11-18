@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Check, Tag, Trash2, Edit, Save, X, WifiOff } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
-import axios from "axios";
+import api from '../../services/api';
 import Notification from '../../components/Notification/Notification';
 // Import the ConfirmationModal component from its new file
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
@@ -44,17 +44,7 @@ const AddItem = () => {
     const fetchItems = async () => {
         try {
             setLoadingItems(true);
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                showNotification("User is not authenticated. Please log in.", "error");
-                setLoadingItems(false);
-                return;
-            }
-            const response = await axios.get("http://127.0.0.1:8000/api/items", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await api.get('/items');
             setItems(response.data);
         } catch (error) {
             console.error("Error fetching items:", error);
@@ -87,25 +77,12 @@ const AddItem = () => {
         setNotification({ message: "", type: "" });
 
         try {
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                const msg = "User is not authenticated. Please log in.";
-                showNotification(msg, "error");
-                setIsSubmitting(false);
-                return;
-            }
-            const response = await axios.post(
-                "http://127.0.0.1:8000/api/items",
+            const response = await api.post(
+                "/items",
                 {
                     itemName: formData.itemName,
                     serviceTimeout: formData.serviceTimeout,
                     icon: formData.icon,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
                 }
             );
 
@@ -159,21 +136,9 @@ const AddItem = () => {
         try {
             setNotification({ message: "", type: "" });
 
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                const msg = "User is not authenticated. Please log in.";
-                showNotification(msg, "error");
-                return;
-            }
+            console.log('Making DELETE request to:', `/api/items/${itemToDeleteId}`);
 
-            console.log('Making DELETE request to:', `http://127.0.0.1:8000/api/items/${itemToDeleteId}`);
-
-            const response = await axios.delete(`http://127.0.0.1:8000/api/items/${itemToDeleteId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-            });
+            const response = await api.delete(`/items/${itemToDeleteId}`);
 
             console.log('Delete response:', response);
 
@@ -239,7 +204,7 @@ const AddItem = () => {
     };
 
     const startEditing = (item) => {
-        setEditingItemId(item.id);
+        setEditingItemId(item._id);
         setEditFormData({
             itemName: item.name,
             serviceTimeout: item.service_timeout || "",
@@ -260,24 +225,12 @@ const AddItem = () => {
     const saveEdit = async (id) => {
         try {
             setNotification({ message: "", type: "" });
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                const msg = "User is not authenticated. Please log in.";
-                showNotification(msg, "error");
-                return;
-            }
-            const response = await axios.put(
-                `http://127.0.0.1:8000/api/items/${id}`,
+            const response = await api.put(
+                `/items/${id}`,
                 {
                     itemName: editFormData.itemName,
                     serviceTimeout: editFormData.serviceTimeout,
                     icon: editFormData.icon,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
                 }
             );
             if (response.status === 200) {
@@ -462,14 +415,14 @@ const AddItem = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((item) => (
                             <div
-                                key={item.id}
+                                key={item._id}
                                 className={`${
                                     isDarkMode
                                         ? "bg-gray-800 border border-gray-700"
                                         : "bg-gray-50 border border-gray-200"
                                 } rounded-lg p-4 shadow-sm flex flex-col`}
                             >
-                                {editingItemId === item.id ? (
+                                {editingItemId === item._id ? (
                                     <div className="space-y-3">
                                         <div className="flex items-center space-x-2">
                                             <label htmlFor={`edit-itemName-${item.id}`} className="text-sm font-medium w-24">Name:</label>
@@ -513,13 +466,13 @@ const AddItem = () => {
                                             </div>
                                         </div>
                                         <div className="flex justify-end space-x-2 mt-4">
-                                            <button
-                                                onClick={() => saveEdit(item.id)}
-                                                className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
-                                                title="Save"
-                                            >
-                                                <Save size={18} />
-                                            </button>
+                                                <button
+                                                    onClick={() => saveEdit(item._id)}
+                                                    className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
+                                                    title="Save"
+                                                >
+                                                    <Save size={18} />
+                                                </button>
                                             <button
                                                 onClick={cancelEditing}
                                                 className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
@@ -549,7 +502,7 @@ const AddItem = () => {
                                                     <Edit size={18} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteClick(item.id, item.name)}
+                                                    onClick={() => handleDeleteClick(item._id, item.name)}
                                                     className={`p-2 rounded-full ${isDarkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-200'} transition-colors`}
                                                     title="Delete"
                                                 >

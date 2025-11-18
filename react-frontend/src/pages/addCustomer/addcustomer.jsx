@@ -5,6 +5,7 @@ import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
 import Notification from '../../components/Notification/Notification'; // Import the Notification component
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import LoadingItems from "../../components/Loading/LoadingItems";
+import api from '../../services/api';
 
 // Placeholder for ThemeContext if not available
 
@@ -111,6 +112,7 @@ const AddCustomer = () => {
     address: "",
     email: "",
     phone: "",
+    type: "Customer"
   });
 
   // State for dynamic areas and branches associated with a customer
@@ -125,8 +127,7 @@ const AddCustomer = () => {
       ],
     },
   ]);
-  // State for available areas fetched from API (used for reference, not form fields)
-  const [availableAreas, setAvailableAreas] = useState([]);
+
 
   // Main list of all customers fetched from the API
   const [customers, setCustomers] = useState([]);
@@ -175,7 +176,7 @@ const AddCustomer = () => {
     return allDistricts.filter(district => !assignedAreas.includes(district));
   };
 
-  // Effect hook to fetch areas and customers on component mount
+  // Effect hook to fetch customers on component mount
   useEffect(() => {
     // Reset form fields on component mount to ensure empty form after reload
     setFormData({
@@ -197,7 +198,6 @@ const AddCustomer = () => {
     ]);
     setEditingCustomerId(null);
 
-    fetchAreas();
     fetchCustomers();
   }, []);
 
@@ -224,45 +224,15 @@ const AddCustomer = () => {
     setFilteredCustomers(filtered);
   }, [customers, searchTerm]);
 
-  // Fetches area data from the API
-  const fetchAreas = async () => {
-    try {
-      // In a real application, you would replace this with an actual fetch.
-      const response = await fetch("/api/areas"); // Replace with your actual API endpoint
-      if (!response.ok) {
-        throw new Error(`Failed to fetch areas: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
 
-      // Convert API response format to match state structure if needed
-      // Assuming your API returns data like: [{ area_name: "...", branches: [{ branch_name: "...", branch_phoneno: "..." }] }]
-      const normalizedAreas = data.map((area) => ({
-        areaName: area.area_name || "",
-        branches: area.branches
-          ? area.branches.map(b => ({
-              branchName: b.branch_name || "",
-              branchPhone: b.branch_phoneno || "",
-            }))
-          : [],
-      }));
-
-      setAvailableAreas(normalizedAreas);
-    } catch (error) {
-      console.error("Error fetching areas:", error);
-      setErrorMessage("Failed to fetch areas: " + error.message);
-    }
-  };
 
   // Fetches customer data from the API
   const fetchCustomers = async () => {
     try {
       setLoadingCustomers(true);
-      // In a real application, replace with a fetch to your actual backend.
-      const response = await fetch("/api/customers"); // Replace with your actual API endpoint
-      if (!response.ok) {
-        throw new Error(`Failed to fetch customers: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
+      const response = await api.get("/customers");
+      console.log("Response Data", response);
+      const data = response.data;
       // Ensure 'id' is mapped to 'customer_id' and 'createdAt' is present
       const processedData = data.map(customer => ({
         ...customer,
@@ -282,6 +252,7 @@ const AddCustomer = () => {
             }))
           : [], // Ensure areas is always an array
       }));
+      console.log("processed Data", processedData);
       setCustomers(processedData);
       setFilteredCustomers(processedData); // Initialize filtered list with actual data
     } catch (error) {
@@ -381,22 +352,9 @@ const AddCustomer = () => {
     try {
       let response;
       if (editingCustomerId) {
-        response = await fetch(`/api/customers/${editingCustomerId}`, { // Replace with your actual API endpoint
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        response = await api.put(`/customers/${editingCustomerId}`, payload);
       } else {
-        response = await fetch("/api/customers", { // Replace with your actual API endpoint
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to save customer");
+        response = await api.post("/customers", payload);
       }
 
       setSuccessMessage(editingCustomerId ? "Customer updated successfully!" : "Customer added successfully!");
@@ -478,21 +436,13 @@ const AddCustomer = () => {
     setErrorMessage("");
 
     try {
-      const response = await fetch(`/api/customers/${customerToDelete.customer_id}`, { // Replace with your actual API endpoint
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete customer");
-      }
+      await api.delete(`/customers/${customerToDelete.customer_id}`);
       setSuccessMessage("Customer deleted successfully!");
       setCustomerToDelete(null); // Clear customer to delete
       fetchCustomers(); // Re-fetch customers to update the list
     } catch (error) {
       console.error("Delete error:", error);
       setErrorMessage(error.message);
-    } finally {
-
     }
   };
 
@@ -538,8 +488,7 @@ const AddCustomer = () => {
       </div>
 
       {/* Customer Form Section */}
-      {!searchTerm && (
-        <div className={`${isDarkMode ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"} rounded-xl p-6 shadow-lg mb-6 flex-grow overflow-auto`}>
+      <div className={`${isDarkMode ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"} rounded-xl p-6 shadow-lg mb-6 flex-grow overflow-auto`}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Details Inputs */}
             <div className="flex justify-between items-center mb-4">
@@ -761,7 +710,6 @@ const AddCustomer = () => {
             </div>
           </form>
         </div>
-      )}
 
       {/* Customer List Display Section - Now using CustomerCard */}
       <div className={`p-6 ${isDarkMode ? "bg-gray-900 text-gray-200" : "bg-gray-50 text-gray-900"}`}>
@@ -783,7 +731,6 @@ const AddCustomer = () => {
       {/* Notification & Confirmation Modals */}
       {successMessage && <Notification message={successMessage} type="success" onClose={() => setSuccessMessage("")} />}
       {errorMessage && <Notification message={errorMessage} type="error" onClose={() => setErrorMessage("")} />}
-      {showDeleteConfirmModal && <ConfirmationModal message="Are you sure you want to delete this customer?" onConfirm={confirmDelete} onCancel={() => setShowDeleteConfirmModal(false)} />}
     </div>
 
       {/* Confirmation Modal */}

@@ -8,14 +8,11 @@ import { BiBell, BiUserCircle, BiCheck, BiTrash, BiCheckCircle, BiMessageCheck }
 import { MdDarkMode, MdMenu } from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom';
 import { CompanySettingsContext } from '../../context/CompanySettingsContext';
-import axios from 'axios';
 import api from '../../services/api';
 import LoadingItems from '../Loading/LoadingItems';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
 import Notification from '../Notification/Notification';
 import { useAuth } from "../../pages/hooks/useAuth";
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const TopDashboard = () => {
     const { isAuthenticated, userRole } = useAuth();
@@ -233,13 +230,7 @@ const TopDashboard = () => {
         setIsLoadingUser(true);
         setUserDataError(null);
         try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-            const headers = { Authorization: `Bearer ${token}` };
-            const response = await axios.get(`${API_BASE_URL}/profile`, { headers });
+            const response = await api.get('/profile');
             const userData = response.data;
             const fullName = userData.username || 'User';
             const profileImageUrl = userData.profile_image_url || null;

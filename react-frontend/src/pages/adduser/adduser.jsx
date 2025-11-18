@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
 import { User, Mail, Lock, Shield, Phone, Eye, EyeOff, UserPlus, Trash2, Edit } from "lucide-react";
 import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
 import Notification from "../../components/Notification/Notification";
@@ -7,9 +6,7 @@ import { useAuth } from "../../pages/hooks/useAuth";
 import UserProfileIcon from "../../components/UserProfileIcon/UserProfileIcon";
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import LoadingItems from "../../components/Loading/LoadingItems";
-
-// A centralized place for API calls
-const API_BASE_URL = "http://localhost:8000/api";
+import api from '../../services/api';
 
 // Reusable input component to reduce code repetition
 const InputField = ({ label, name, value, onChange, type = "text", placeholder, icon: Icon, required = false, isDarkMode, children, disabled = false }) => {
@@ -127,7 +124,7 @@ const UserCard = ({
 
       {isPasswordChangeActive ? (
         // Render the inline password form when active
-        <form onSubmit={(e) => onPasswordChangeSubmit(e, user.id)} className="space-y-4 pt-4 border-t-2 border-dashed border-gray-500">
+        <form onSubmit={(e) => onPasswordChangeSubmit(e, user._id)} className="space-y-4 pt-4 border-t-2 border-dashed border-gray-500">
           <h4 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Reset Password</h4>
           <InputField
             label="New Password"
@@ -182,9 +179,9 @@ const UserCard = ({
         // Render the action buttons when not in password change mode
         <div className="mt-auto flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex items-center space-x-2 w-full sm:w-auto">
-            <label className={`text-sm font-medium ${subTextColor} whitespace-nowrap`} htmlFor={`role-select-${user.id}`}>Role:</label>
+            <label className={`text-sm font-medium ${subTextColor} whitespace-nowrap`} htmlFor={`role-select-${user._id}`}>Role:</label>
             <select
-              id={`role-select-${user.id}`}
+              id={`role-select-${user._id}`}
               value={user.role}
               onChange={(e) => initiateRoleChange(user, e.target.value)}
               className={`py-1 px-2 rounded-md border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} focus:ring-blue-500 focus:border-blue-500 text-sm w-full`}
@@ -266,33 +263,22 @@ const AddUser = () => {
     }
   }, [currentUserId]);
 
-  const fetchCurrentUser = async () => {
-    if (!authToken) {
-      setNotification({ message: "Authentication token not found. Please log in.", type: 'error' });
-      return;
-    }
+  const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/user`, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
-      setCurrentUserId(response.data.id);
+      const response = await api.get('/user');
+      setCurrentUserId(response.data.user._id);
     } catch (error) {
       setNotification({ message: "Failed to fetch current user info.", type: 'error' });
     }
   };
 
-  const fetchUsers = async () => {
-    if (!authToken) {
-      setNotification({ message: "Authentication token not found. Please log in.", type: 'error' });
-      return;
-    }
+  const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/users`, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
+      const response = await api.get('/users');
+      console.log('Users response:', response.data);
       const usersData = Array.isArray(response.data) ? response.data : response.data.users;
-      const filteredUsers = usersData.filter(user => user.id !== currentUserId);
+      const filteredUsers = usersData.filter(user => user._id !== currentUserId);
       setUsers(filteredUsers);
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
@@ -324,27 +310,13 @@ const AddUser = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!authToken) {
-      setNotification({ message: "Authentication token not found. Please log in.", type: 'error' });
-      setIsSubmitting(false);
-      return;
-    }
     if (!formData.fullname.trim() || !formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !formData.role.trim()) {
       setNotification({ message: "All required fields must be filled.", type: 'error' });
       setIsSubmitting(false);
       return;
     }
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/users`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await api.post('/users', formData);
       setNotification({ message: response.data.message || `User ${formData.fullname || formData.email} added successfully!`, type: 'success' });
       setFormData({
         fullname: "",
@@ -377,10 +349,10 @@ const AddUser = () => {
     setShowConfirmModal(true);
   };
 
-  // Password Change Handlers
+  // Password Change Handlers
   const initiatePasswordChange = (user) => {
     // Set the ID of the user whose form should be open
-    setActivePasswordChangeUserId(user.id);
+    setActivePasswordChangeUserId(user._id);
     setPasswordChangeFormData({ newPassword: '', confirmNewPassword: '' });
   };
 
@@ -393,26 +365,11 @@ const AddUser = () => {
       setIsPasswordChanging(false);
       return;
     }
-    
-    if (!authToken) {
-      setNotification({ message: "Authentication token not found. Please log in.", type: 'error' });
-      setIsPasswordChanging(false);
-      return;
-    }
-    
+
     try {
-      const response = await axios.patch(
-        `${API_BASE_URL}/users/${userId}/password`,
-        {
-          newPassword: passwordChangeFormData.newPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await api.put(`/users/${userId}/password`, {
+        newPassword: passwordChangeFormData.newPassword,
+      });
       setNotification({ message: response.data.message || "Password updated successfully!", type: 'success' });
       setActivePasswordChangeUserId(null); // Close the form
       setPasswordChangeFormData({ newPassword: '', confirmNewPassword: '' });
@@ -431,47 +388,26 @@ const AddUser = () => {
 
   const handleConfirmAction = async () => {
     setShowConfirmModal(false);
-    if (!authToken) {
-      setNotification({ message: "Authentication token not found. Please log in.", type: 'error' });
-      handleCancelAction();
-      return;
-    }
 
-    if (modalAction === 'updateRole' && selectedUser) {
-      try {
-        const response = await axios.put(
-          `${API_BASE_URL}/users/${selectedUser.id}/role`,
-          { role: newRoleForUpdate },
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        setNotification({ message: response.data.message || "Role updated successfully!", type: 'success' });
-        fetchUsers();
-      } catch (error) {
-        const errorMessage = error.response?.data?.message || `Error updating role: ${error.message}`;
-        setNotification({ message: errorMessage, type: 'error' });
-      }
-    } else if (modalAction === 'delete' && selectedUser) {
-      try {
-        const response = await axios.delete(
-          `${API_BASE_URL}/users/${selectedUser.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`
-            }
-          }
-        );
-        setNotification({ message: response.data.message || "User deleted successfully!", type: 'success' });
-        fetchUsers();
-      } catch (error) {
-        const errorMessage = error.response?.data?.message || `Error deleting user: ${error.message}`;
-        setNotification({ message: errorMessage, type: 'error' });
-      }
-    }
+    if (modalAction === 'updateRole' && selectedUser) {
+      try {
+        const response = await api.put(`/users/${selectedUser._id}/role`, { role: newRoleForUpdate });
+        setNotification({ message: response.data.message || "Role updated successfully!", type: 'success' });
+        fetchUsers();
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || `Error updating role: ${error.message}`;
+        setNotification({ message: errorMessage, type: 'error' });
+      }
+    } else if (modalAction === 'delete' && selectedUser) {
+      try {
+        const response = await api.delete(`/users/${selectedUser._id}`);
+        setNotification({ message: response.data.message || "User deleted successfully!", type: 'success' });
+        fetchUsers();
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || `Error deleting user: ${error.message}`;
+        setNotification({ message: errorMessage, type: 'error' });
+      }
+    }
     handleCancelAction();
   };
 
@@ -647,23 +583,23 @@ const AddUser = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {users.length > 0 ? (
-              users.map((user) => (
-                <UserCard
-                  key={user.id}
-                  user={user}
-                  isDarkMode={isDarkMode}
-                  initiateRoleChange={initiateRoleChange}
-                  initiateDeleteUser={initiateDeleteUser}
-                  initiatePasswordChange={initiatePasswordChange}
-                  userRole={userRole}
-                  isPasswordChangeActive={activePasswordChangeUserId === user.id}
-                  passwordChangeFormData={passwordChangeFormData}
-                  onPasswordChangeSubmit={handlePasswordChangeSubmit}
-                  onPasswordChangeCancel={handlePasswordChangeCancel}
-                  onPasswordChangeFormChange={(e) => setPasswordChangeFormData({...passwordChangeFormData, [e.target.name]: e.target.value})}
-                  isPasswordChanging={isPasswordChanging}
-                />
-              ))
+              users.map((user) => (
+                <UserCard
+                  key={user._id}
+                  user={user}
+                  isDarkMode={isDarkMode}
+                  initiateRoleChange={initiateRoleChange}
+                  initiateDeleteUser={initiateDeleteUser}
+                  initiatePasswordChange={initiatePasswordChange}
+                  userRole={userRole}
+                  isPasswordChangeActive={activePasswordChangeUserId === user._id}
+                  passwordChangeFormData={passwordChangeFormData}
+                  onPasswordChangeSubmit={handlePasswordChangeSubmit}
+                  onPasswordChangeCancel={handlePasswordChangeCancel}
+                  onPasswordChangeFormChange={(e) => setPasswordChangeFormData({...passwordChangeFormData, [e.target.name]: e.target.value})}
+                  isPasswordChanging={isPasswordChanging}
+                />
+              ))
             ) : (
               <p className={`col-span-full text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 No users found.

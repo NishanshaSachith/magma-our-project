@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { ThemeContext } from '../ThemeContext/ThemeContext';
 import { motion } from 'framer-motion';
 
@@ -16,9 +16,7 @@ const KeyMetrics = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:8000/api/job-homes', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/job-homes');
         const jobHomes = response.data;
         const totalJobs = jobHomes.length;
         const completedJobs = jobHomes.filter(job => job.job_status === 'complete').length;

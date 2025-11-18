@@ -2,13 +2,11 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../components/ThemeContext/ThemeContext';
 import { Check, Eye, EyeOff } from 'react-feather';
 import { FiUser } from "react-icons/fi"; // For default user icon
-import axios from 'axios'; // For API calls
+import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import Notification from '../../components/Notification/Notification'; // Import the Notification component
 
-// --- IMPORTANT: Configure your API Base URL ---
-const API_BASE_URL = 'http://127.0.0.1:8000/api'; // Example: adjust if your backend is on a different port/domain
-// ---------------------------------------------
+
 
 const ProfileSettings = () => {
     const { isDarkMode } = useContext(ThemeContext);
@@ -63,7 +61,7 @@ const ProfileSettings = () => {
                 const token = localStorage.getItem('authToken');
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-                const response = await axios.get(`${API_BASE_URL}/profile`, { headers });
+                const response = await api.get('/profile', { headers });
                 
                 const fetchedData = {
                     id: response.data.id,
@@ -204,8 +202,7 @@ const ProfileSettings = () => {
             const token = localStorage.getItem('authToken');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            formData.append('_method', 'PUT'); // Spoof method for Laravel
-            const response = await axios.post(`${API_BASE_URL}/profile`, formData, { headers });
+            const response = await api.put('/profile', formData, { headers });
 
             setSaveSuccessMessage(response.data.message);
 
@@ -230,6 +227,9 @@ const ProfileSettings = () => {
             setIsProfileImageRemoved(false);
             setShowNewPassword(false); // Reset password visibility
             setShowConfirmPassword(false); // Reset password visibility
+
+            // Dispatch event to refresh profile data in other components like TopDashboard
+            window.dispatchEvent(new Event('userProfileUpdated'));
 
         } catch (error) {
             console.error('Error saving profile:', error);

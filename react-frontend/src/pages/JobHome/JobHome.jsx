@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext, useCallback, useRef, useMemo } from "react";
-import axios from "axios";
 import {
   FaTimes, FaImage, FaEnvelope, FaArrowLeft,
   FaMoneyBillWave, FaSpinner, FaExclamationTriangle,
@@ -16,6 +15,7 @@ import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
 import { UserPlus, CircleX } from "lucide-react";
 import { useAuth } from "../../pages/hooks/useAuth";
 import LoadingItems from "../../components/Loading/LoadingItems";
+import api from '../../services/api';
 
 import CancelJobPage from "./CancelJobPage";
 import ImageUpload from "./ImageUpload";
@@ -73,9 +73,7 @@ const JobHome = ({ onGoBack, job }) => {
     if (!job?.job_home_id && !id) return;
     try {
       const jobHomeId = job?.job_home_id || id;
-      const authToken = localStorage.getItem('authToken');
-      const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await axios.get(`http://localhost:8000/api/job-homes/${jobHomeId}`, { headers });
+      const res = await api.get(`/job-homes/${jobHomeId}`);
       setJobData(res.data);
       if (res.data.job_card?.id) {
         setJobCardId(res.data.job_card.id);
@@ -97,9 +95,7 @@ const JobHome = ({ onGoBack, job }) => {
       setError(null);
       try {
         if (job?.job_home_id) {
-          const authToken = localStorage.getItem('authToken');
-          const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-          const res = await axios.get(`http://localhost:8000/api/job-homes/${job.job_home_id}`, { headers });
+          const res = await api.get(`/job-homes/${job.job_home_id}`);
           setJobData(res.data);
           if (res.data.job_card?.id) {
             setJobCardId(res.data.job_card.id);
@@ -108,9 +104,7 @@ const JobHome = ({ onGoBack, job }) => {
           }
         } else if (!job && id) {
           // From notification, fetch by id
-          const authToken = localStorage.getItem('authToken');
-          const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-          const res = await axios.get(`http://localhost:8000/api/job-homes/${id}`, { headers });
+          const res = await api.get(`/job-homes/${id}`);
           setJobData(res.data);
           if (res.data.job_card?.id) {
             setJobCardId(res.data.job_card.id);
@@ -159,13 +153,7 @@ const JobHome = ({ onGoBack, job }) => {
     }));
 
     try {
-      const authToken = localStorage.getItem('authToken');
-      const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await axios.put(
-        `http://localhost:8000/api/job-homes/${jobData.job_home.id}`,
-        { [field]: newToggleValue },
-        { headers, withCredentials: true }
-      );
+      const res = await api.put(`/job-homes/${jobData.job_home.id}`, { [field]: newToggleValue });
       if (res.data?.id) {
         setJobData(prev => ({ ...prev, job_home: res.data }));
       }

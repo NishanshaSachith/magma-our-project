@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
 import { FaTrash } from "react-icons/fa";
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
@@ -44,7 +44,7 @@ const PaymentPage = ({ jobHomeId, jobCardId, onLoaded }) => {
       setIsLoadingQuotation(true);
       setQuotationError(null);
       try {
-        const response = await axios.get(`http://localhost:8000/api/quotations/${jobCardId}`, { withCredentials: true });
+        const response = await api.get(`/quotations/${jobCardId}`);
         const quotation = response.data;
         if (quotation && quotation.total_with_tax_vs_disc) {
           setFullPayment(parseFloat(quotation.total_with_tax_vs_disc).toFixed(2));
@@ -71,7 +71,7 @@ const PaymentPage = ({ jobHomeId, jobCardId, onLoaded }) => {
 
     const fetchPayments = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/payments/by-jobhome/${jobHomeId}`, { withCredentials: true });
+        const response = await api.get(`/payments/by-jobhome/${jobHomeId}`);
         const existingPayments = response.data;
         setPaymentObjects(existingPayments);
         // Calculate total paid from existing payments
@@ -115,11 +115,11 @@ const PaymentPage = ({ jobHomeId, jobCardId, onLoaded }) => {
     if (advance > 0 && jobHomeId) {
       setIsSubmittingAdvance(true);
       try {
-        await axios.post(`http://localhost:8000/api/payments`, {
+        await api.post(`/payments`, {
           jobhomeid: jobHomeId,
           payment_amount: advance,
           date: new Date().toISOString().split('T')[0], // Today's date
-        }, { withCredentials: true });
+        });
 
         // Add the saved advance payment to the payments array
         setPayments(prev => [...prev, advance]);
@@ -149,11 +149,11 @@ const PaymentPage = ({ jobHomeId, jobCardId, onLoaded }) => {
 
     setIsSubmittingPayment(true);
     try {
-      await axios.post(`http://localhost:8000/api/payments`, {
+      await api.post(`/payments`, {
         jobhomeid: jobHomeId,
         payment_amount: value,
         date: new Date().toISOString().split('T')[0], // Today's date
-      }, { withCredentials: true });
+      });
 
       // Add the new payment to the list
       setPayments([...payments, value]);
@@ -190,7 +190,7 @@ const PaymentPage = ({ jobHomeId, jobCardId, onLoaded }) => {
     setShowConfirmModal(false);
 
     try {
-      await axios.delete(`http://localhost:8000/api/payments/${paymentId}`, { withCredentials: true });
+      await api.delete(`/payments/${paymentId}`);
 
       // Remove the payment from both arrays
       setPayments(prev => prev.filter((_, i) => i !== index));

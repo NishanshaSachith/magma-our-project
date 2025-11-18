@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext'; // Import your AuthContext
 import { useNavigate } from 'react-router-dom'; // For redirection
 import UserProfileIcon from '../UserProfileIcon/UserProfileIcon';
@@ -10,8 +10,6 @@ const UserList = () => {
   const [users, setUsers] = useState([]);
   const [apiError, setApiError] = useState('');
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-
-  const API_BASE_URL = 'http://127.0.0.1:8000/api'; // Your Laravel API base URL
 
   useEffect(() => {
     // Wait until authentication status is determined
@@ -31,8 +29,9 @@ const UserList = () => {
         setApiError(''); // Clear previous errors
 
         // Axios is already configured to include the token via AuthContext's useEffect
-        const response = await axios.get(`${API_BASE_URL}/users`);
-        setUsers(response.data.data); // Assuming Laravel returns { message: ..., data: [...] }
+        // This ensures the token is still valid on the backend
+        const response = await api.get("/users");
+        setUsers(response.data); // Node.js backend returns array directly
       } catch (error) {
         console.error('Error fetching users:', error);
         if (error.response) {
@@ -108,9 +107,9 @@ const UserList = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                 {users.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {user.id}
+                      {user._id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 flex items-center space-x-2">
                       <UserProfileIcon user={user} isDarkMode={document.body.classList.contains('dark')} size={8} />

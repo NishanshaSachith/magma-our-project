@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle, FaFacebookF, FaGithub, FaMoon, FaSun } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from "../../components/ThemeContext/ThemeContext";
-import axios from 'axios';
+import api from '../../services/api';
 
 const LoginPage = () => {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
@@ -15,8 +15,6 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +37,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/login`, {
+      const response = await api.post('/login', {
         email: formData.email,
         password: formData.password,
       });

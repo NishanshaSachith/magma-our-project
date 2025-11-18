@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import axios from 'axios';
+import api from '../../services/api';
 import { ThemeContext } from '../ThemeContext/ThemeContext';
 
 const YearlyPaymentChart = ({ selectedYear }) => {
@@ -11,9 +11,7 @@ const YearlyPaymentChart = ({ selectedYear }) => {
     const fetchJobHomes = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:8000/api/job-homes', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/job-homes');
         const processedData = processJobData(response.data, selectedYear);
         setData(processedData);
       } catch (error) {

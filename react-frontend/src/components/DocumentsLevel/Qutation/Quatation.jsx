@@ -3,7 +3,7 @@ import { FaCalendarAlt, FaTrash, FaDownload,FaInfoCircle, FaPrint, FaCheck, FaEd
 import { ThemeContext } from "../../ThemeContext/ThemeContext";
 import Notification from '../../Notification/Notification';
 import { useAuth } from "../../../pages/hooks/useAuth";
-import axios from "axios";
+import api from '../../../services/api';
 import LoadingItems from "../../Loading/LoadingItems";
 import Calendar from '../../calender/Calender';
 import jsPDF from "jspdf";
