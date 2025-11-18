@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: magma-app
+    env: node
+    plan: free
+    rootDir: node-backend
+    buildCommand: |
+      cd ../react-frontend
+      npm install
+      npm run build
+      cd ../node-backend
+      npm install
+    startCommand: "node server.js"
