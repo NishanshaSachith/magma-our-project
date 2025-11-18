@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-import { fileURLToPath } from "url";
+const { fileURLToPath } = require('url'); 
 
 dotenv.config();
 
