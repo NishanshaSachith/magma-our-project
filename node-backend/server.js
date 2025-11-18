@@ -36,11 +36,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-// For ES modules:
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Serve the React build
 app.use(express.static(path.join(__dirname, "../react-frontend/dist")));
 
