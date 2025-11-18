@@ -17,7 +17,7 @@ import { ThemeContext } from "../../ThemeContext/ThemeContext";
 import Notification from '../../Notification/Notification';
 import { useAuth } from "../../../pages/hooks/useAuth";
 import jsPDF from "jspdf";
-import Calendar from '../../calender/Calender';
+import Calendar from '../../Calender/Calender';
 
 const TaxInvoice = ({ quotationId: propQuotationId, jobNo, isJobCancelled = false }) => {
   const { isDarkMode } = useContext(ThemeContext);
