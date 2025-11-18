@@ -5,7 +5,7 @@ import Notification from '../../Notification/Notification';
 import { useAuth } from "../../../pages/hooks/useAuth";
 import api from '../../../services/api';
 import LoadingItems from "../../Loading/LoadingItems";
-import Calendar from '../../calender/Calender';
+import Calendar from '../../Calender/Calender';
 import jsPDF from "jspdf";
 
 const Quotation = ({ jobCardId, jobNo, onQuotationCreated, isJobCancelled = false }) => {

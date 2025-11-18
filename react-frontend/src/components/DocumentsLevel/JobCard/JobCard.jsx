@@ -5,7 +5,7 @@ import jsPDF from "jspdf";
 import api from "../../../services/api"; // Use centralized api instance
 import Notification from '../../Notification/Notification';
 import { useAuth } from '../../../pages/hooks/useAuth';
-import Calendar from '../../calender/Calender';
+import Calendar from '../../Calender/Calender';
 
 const JobCard = ({ jobHomeId, jobNo, jobCardId: initialJobCardId, isJobCancelled = false, service, onJobCreated }) => {
   const { isDarkMode } = useContext(ThemeContext);

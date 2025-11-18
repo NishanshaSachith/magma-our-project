@@ -15,7 +15,7 @@ import JobHome from "../JobHome/JobHome";
 import LoadingItems from "../../components/Loading/LoadingItems";
 import '../../components/SummaryDashboard/JobStatusPieChart';
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
+import axios from "axios"; // Note: axios imported but not used directly, assuming `api` wraps it.
 
 
 const DynamicIcons = {
@@ -436,7 +436,7 @@ const Home = () => {
                   <div
                     className={`
                       ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}
-                      absolute right-0 mt-2 w-full sm:w-56 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10
+                      absolute right-0 mt-2 w-full sm:w-56 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 // <--- ADDED Z-50
                     `}
                     role="menu"
                     aria-orientation="vertical"
