@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
@@ -35,9 +36,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-import path from "path";
-import { fileURLToPath } from "url";
 
 // For ES modules:
 const __filename = fileURLToPath(import.meta.url);
