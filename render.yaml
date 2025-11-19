@@ -5,5 +5,5 @@ services:
     plan: free
     rootDir: .
     buildCommand: "cd node-backend && npm install && cd ../react-frontend && npm install && npm run build"
-    startCommand: "cd node-backend && node server.js"
+    startCommand: "node server.js"
 
