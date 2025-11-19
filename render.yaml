@@ -3,7 +3,7 @@ services:
     name: magma-backend
     env: node
     plan: free
-    rootDir: .
-    buildCommand: "cd node-backend && npm install && cd ../react-frontend && npm install && npm run build"
-    startCommand: "node ./node-backend/server.js"
+    rootDir: node-backend
+    buildCommand: "npm install && cd ../react-frontend && npm install && npm run build"
+    startCommand: "node server.js"
 
