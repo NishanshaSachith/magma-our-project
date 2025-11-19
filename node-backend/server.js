@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const cors = require('cors');
 // ... other imports ...
 const path = require('path');
 
@@ -32,12 +33,12 @@ app.use('/api', apiRoutes);
 // 1. Serve the static files from the built React app
 // This middleware must come AFTER all API routes (`/api`)
 // but BEFORE the catch-all route.
-app.use(express.static(path.join(__dirname, "../react-frontend/dist")));
+app.use(express.static(path.join(__dirname, "../react-frontend/build")));
 
 // 2. Catch-all route: For any request not handled by the API or static files,
 // send the React app's index.html file.
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../react-frontend/dist/index.html"));
+  res.sendFile(path.join(__dirname, "../react-frontend/build/index.html"));
 });
 
 // --- END: CORRECTED REACT SERVING LOGIC ---
